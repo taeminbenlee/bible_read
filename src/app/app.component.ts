@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Auth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from '@angular/fire/auth';
 import { Firestore, collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc } from '@angular/fire/firestore';
 import { BibleService } from './bible.service';
+import { HostListener } from '@angular/core'; // 상단에 추가
+
 
 @Component({
   selector: 'app-root',
@@ -9,6 +11,8 @@ import { BibleService } from './bible.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  deferredPrompt: any;
+  showInstallBtn = false;
   user: any = null; //
   nickname = '';
   password = '';
@@ -174,5 +178,27 @@ export class AppComponent implements OnInit {
     const totalChapters = 1189;
     const readCount = this.readChapters.length;
     return parseFloat(((readCount / totalChapters) * 100).toFixed(1));
+  }
+
+  @HostListener('window:beforeinstallprompt', ['$event'])
+  onBeforeInstallPrompt(e: any) {
+    // 안드로이드/크롬에서 설치 팝업을 띄울 수 있는 상태가 되면 발생
+    e.preventDefault();
+    this.deferredPrompt = e;
+    this.showInstallBtn = true;
+  }
+
+  async installApp() {
+    if (this.deferredPrompt) {
+      this.deferredPrompt.prompt();
+      const { outcome } = await this.deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        this.showInstallBtn = false;
+      }
+      this.deferredPrompt = null;
+    } else {
+      // 아이폰이나 설치 팝업이 안 뜨는 경우 안내
+      alert('아이폰(사파리): 하단 공유 버튼 클릭 후 [홈 화면에 추가]를 눌러주세요!\n안드로이드: 브라우저 설정 메뉴에서 [앱 설치]를 눌러주세요.');
+    }
   }
 }

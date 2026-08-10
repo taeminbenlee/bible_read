@@ -39,6 +39,10 @@
 
   <!-- 2. 로그인 후 화면 -->
   <div *ngIf="user">
+    <div *ngIf="user && showInstallBtn" class="p-4 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
+      <span class="text-xs font-bold text-blue-800">앱으로 설치해서 편하게 사용하세요!</span>
+      <button (click)="installApp()" class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">앱 설치</button>
+    </div>
     <!-- 상단 바 -->
     <header class="bg-white p-5 flex justify-between items-center sticky top-0 z-10 border-b">
       <span class="font-bold text-blue-600 text-lg">{{ user?.nickname }}님</span>
