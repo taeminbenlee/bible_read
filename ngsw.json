@@ -1,0 +1,81 @@
+{
+  "configVersion": 1,
+  "timestamp": 1786349664546,
+  "index": "/bible_read/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/bible_read/favicon.ico",
+        "/bible_read/index.html",
+        "/bible_read/main.c8e107b3f975064e.js",
+        "/bible_read/manifest.webmanifest",
+        "/bible_read/polyfills.fefc2a8d4178c7b9.js",
+        "/bible_read/runtime.10bcf8f29780a9f4.js",
+        "/bible_read/styles.489d98feb9a9bbb9.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/bible_read/assets/bible-data.json",
+        "/bible_read/assets/icons/apple-touch-icon.png",
+        "/bible_read/assets/icons/favicon-96x96.png",
+        "/bible_read/assets/icons/favicon.ico",
+        "/bible_read/assets/icons/favicon.svg",
+        "/bible_read/assets/icons/site.webmanifest",
+        "/bible_read/assets/icons/web-app-manifest-192x192.png",
+        "/bible_read/assets/icons/web-app-manifest-512x512.png"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/bible_read/assets/bible-data.json": "70d309d5298467642a95494ae1623b2039d20da0",
+    "/bible_read/assets/icons/apple-touch-icon.png": "09b268f34887b6bad4bfd9c822fc5d69ffa9dfc4",
+    "/bible_read/assets/icons/favicon-96x96.png": "954fc331372585f536d6f6c93e29e359b7334d93",
+    "/bible_read/assets/icons/favicon.ico": "b090d19bcc78231b9683f59c879433c52c4476c1",
+    "/bible_read/assets/icons/favicon.svg": "95a7d5087227de17aedf39e0c5f428c02e3c8f1d",
+    "/bible_read/assets/icons/site.webmanifest": "3929dec542b29b4f06870af0a4ccfc423ad3c7c8",
+    "/bible_read/assets/icons/web-app-manifest-192x192.png": "aff6f9dc8f2fb52f0a1db33ced9a9eeabbef4a66",
+    "/bible_read/assets/icons/web-app-manifest-512x512.png": "1f873f67743cd8f132e26b537550c68064afadec",
+    "/bible_read/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
+    "/bible_read/index.html": "de24f8fdc930366b7f70ac8cdf014416e0d420bd",
+    "/bible_read/main.c8e107b3f975064e.js": "e4376b5fe8614894bf6023a9b88b2cef29bab9c9",
+    "/bible_read/manifest.webmanifest": "1ef17efd50991d38b6e203bca116b58b28a7caf3",
+    "/bible_read/polyfills.fefc2a8d4178c7b9.js": "3909b9414bc7bb12cb817b48c73796bbc13f316e",
+    "/bible_read/runtime.10bcf8f29780a9f4.js": "d60aa06ba084dfea190aa76a27b45008aa9005f3",
+    "/bible_read/styles.489d98feb9a9bbb9.css": "b25a7535da7060bc98bc13df789415c8d7e93316"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
