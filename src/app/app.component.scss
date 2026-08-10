@@ -1,0 +1,36 @@
+/* Paperlogy 폰트 불러오기 (CDN) */
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-1@1.1/Paperlogy-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-1@1.1/Paperlogy-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Paperlogy';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-1@1.1/Paperlogy-ExtraBold.woff2') format('woff2');
+    font-weight: 800;
+    font-style: normal;
+}
+
+/* 전체 앱에 폰트 적용 */
+:root {
+    font-family: 'Paperlogy', sans-serif;
+}
+
+body {
+    font-family: 'Paperlogy', sans-serif !important;
+    background-color: #f9fafb; /* gray-50 */
+}
+
+/* 입력창, 버튼, 선택창에도 폰트 강제 적용 */
+button, input, select, textarea {
+    font-family: 'Paperlogy', sans-serif !important;
+}
