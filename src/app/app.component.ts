@@ -24,6 +24,9 @@ export class AppComponent implements OnInit {
   verses: any[] = [];
   ranking: any[] = [];
 
+  readChapters: string[] = []; // 이미 읽은 장들의 ID (예: ['창1', '창2'])
+
+
   constructor(private firestore: Firestore, public bibleService: BibleService) {
     this.bibleList = this.bibleService.BIBLE_LIST;
   }
@@ -39,8 +42,13 @@ export class AppComponent implements OnInit {
 
   async loadInitialData() {
     await this.bibleService.getBibleData();
+    await this.updateReadList();
     this.onBookChange();
     this.loadRanking();
+  }
+
+  async updateReadList() {
+    this.readChapters = await this.bibleService.getUserReads(this.user.nickname);
   }
 
   // [로그인]
@@ -113,17 +121,58 @@ export class AppComponent implements OnInit {
     window.scrollTo({ top: 400, behavior: 'smooth' });
   }
 
-  async markAsRead() {
-    const book = this.bibleList[this.selectedBookIndex];
-    await this.bibleService.saveReadRecord(this.user.nickname, book.abbr, this.selectedChapter);
-    alert(`${book.name} ${this.selectedChapter}장 완료!`);
-    this.loadRanking();
-  }
 
   // 랭킹 로드
   async loadRanking() {
     const q = query(collection(this.firestore, 'users'), orderBy('totalRead', 'desc'), limit(50));
     const snap = await getDocs(q);
     this.ranking = snap.docs.map(d => d.data());
+  }
+
+  isRead(chapter: number): boolean {
+    const book = this.bibleList[this.selectedBookIndex];
+    const key = `${book.abbr}${chapter}`;
+    return this.readChapters.includes(key);
+  }
+
+  // 5. markAsRead 함수 수정 (읽자마자 화면에 반영)
+  async markAsRead() {
+    const book = this.bibleList[this.selectedBookIndex];
+    await this.bibleService.saveReadRecord(this.user.nickname, book.abbr, this.selectedChapter);
+
+    // 현재 읽은 장을 목록에 즉시 추가하여 화면 갱신
+    const key = `${book.abbr}${this.selectedChapter}`;
+    if (!this.readChapters.includes(key)) {
+      this.readChapters.push(key);
+    }
+
+    alert(`${book.name} ${this.selectedChapter}장 완료!`);
+    this.loadRanking();
+  }
+
+  getBookProgress() {
+    const book = this.bibleList[this.selectedBookIndex];
+    if (!book) return { read: 0, total: 0, percent: 0 };
+
+    let readInBook = 0;
+    for (let i = 1; i <= book.chapters; i++) {
+      if (this.readChapters.includes(`${book.abbr}${i}`)) {
+        readInBook++;
+      }
+    }
+
+    return {
+      read: readInBook,
+      total: book.chapters,
+      percent: Math.round((readInBook / book.chapters) * 100)
+    };
+  }
+
+  // 2. 성경 전체 진행 상태 계산
+  getTotalProgressPercent(): number {
+    // 성경 전체 장수는 1,189장입니다.
+    const totalChapters = 1189;
+    const readCount = this.readChapters.length;
+    return parseFloat(((readCount / totalChapters) * 100).toFixed(1));
   }
 }

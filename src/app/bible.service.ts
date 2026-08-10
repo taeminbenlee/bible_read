@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Firestore, collection, doc, setDoc, query, orderBy, getDocs, updateDoc, increment, arrayUnion } from '@angular/fire/firestore';
+import { Firestore, collection, doc, setDoc, query, orderBy, getDocs, updateDoc, increment, arrayUnion, getDoc } from '@angular/fire/firestore';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -119,5 +119,14 @@ export class BibleService {
       // 상세 읽기 기록 추가
       await setDoc(readDocRef, { reads: arrayUnion(`${abbr}${chapter}`) }, { merge: true });
     }
+  }
+
+  async getUserReads(nickname: string): Promise<string[]> {
+    const docRef = doc(this.firestore, `user_reads/${nickname}`);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data()['reads'] || [];
+    }
+    return [];
   }
 }

@@ -49,7 +49,36 @@
     <main class="p-4">
 
       <!-- [탭 1: 성경 읽기] -->
-      <div *ngIf="activeTab === 'read'">
+      <div *ngIf="activeTab === 'read'" class="space-y-6">
+        <!-- 전체 진행률 카드 -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-5 rounded-3xl shadow-lg text-white">
+          <div class="flex justify-between items-end mb-2">
+            <div>
+              <p class="text-blue-100 text-xs font-bold uppercase tracking-wider">전체 성경 통독 현황</p>
+              <h3 class="text-2xl font-black">{{ getTotalProgressPercent() }}% <span class="text-sm font-normal opacity-80">완료</span></h3>
+            </div>
+            <div class="text-right">
+              <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-bold">{{ readChapters.length }} / 1189 장</span>
+            </div>
+          </div>
+          <!-- 전체 프로그래스 바 -->
+          <div class="w-full bg-black/20 h-2 rounded-full overflow-hidden">
+            <div class="bg-white h-full transition-all duration-500" [style.width.%]="getTotalProgressPercent()"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+          <div class="flex justify-between items-center mb-3">
+            <span class="font-black text-gray-800 text-lg">{{ bibleList[selectedBookIndex].name }}</span>
+            <span class="text-sm font-bold text-blue-600">{{ getBookProgress().read }} / {{ getBookProgress().total }}장</span>
+          </div>
+          <!-- 책별 프로그래스 바 -->
+          <div class="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
+            <div class="bg-blue-500 h-full transition-all duration-500" [style.width.%]="getBookProgress().percent"></div>
+          </div>
+        </div>
+
+
         <div class="mb-4">
           <label class="text-xs font-bold text-gray-400 mb-1 block uppercase">성경 선택</label>
           <select [(ngModel)]="selectedBookIndex" (change)="onBookChange()" class="w-full p-4 bg-white rounded-xl shadow-sm border-none appearance-none font-bold">
@@ -60,9 +89,17 @@
         <!-- 장 번호 버튼 부분 (app.component.html) -->
         <div class="grid grid-cols-5 gap-3 mb-8">
           <button *ngFor="let ch of chapters" (click)="selectChapter(ch)"
-            [class]="selectedChapter === ch ? 'bg-blue-600 text-white border-blue-600 shadow-blue-200' : 'bg-white text-gray-600 border-gray-100'"
-            class="aspect-square rounded-xl font-bold shadow-sm flex items-center justify-center border text-lg transition-all active:bg-blue-50">
+            [class]="selectedChapter === ch ? 'bg-blue-600 text-white border-blue-600' : (isRead(ch) ? 'bg-green-50 text-green-700 border-green-200' : 'bg-white text-gray-600 border-gray-100')"
+            class="relative aspect-square rounded-xl font-bold shadow-sm flex items-center justify-center border text-lg transition-all active:scale-90">
+
             {{ ch }}
+
+            <!-- 이미 읽은 장이면 작은 체크 표시 추가 -->
+            <div *ngIf="isRead(ch)" class="absolute -top-1 -right-1 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
           </button>
         </div>
 
