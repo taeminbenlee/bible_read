@@ -42,6 +42,15 @@ export class AppComponent implements OnInit {
       this.user = JSON.parse(savedUser);
       this.loadInitialData();
     }
+    this.checkiOSInstallationButton();
+  }
+
+  checkiOSInstallationButton() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    if (isIOS && !isStandalone) {
+      this.showInstallBtn = true;
+    }
   }
 
   async loadInitialData() {
