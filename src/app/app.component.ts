@@ -3,6 +3,7 @@ import { Auth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEma
 import { Firestore, collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc } from '@angular/fire/firestore';
 import { BibleService } from './bible.service';
 import { HostListener } from '@angular/core'; // 상단에 추가
+import { SwUpdate } from '@angular/service-worker';
 
 
 @Component({
@@ -31,7 +32,7 @@ export class AppComponent implements OnInit {
   readChapters: string[] = []; // 이미 읽은 장들의 ID (예: ['창1', '창2'])
 
 
-  constructor(private firestore: Firestore, public bibleService: BibleService) {
+  constructor(private firestore: Firestore, public bibleService: BibleService, private swUpdate: SwUpdate) {
     this.bibleList = this.bibleService.BIBLE_LIST;
   }
 
@@ -43,6 +44,20 @@ export class AppComponent implements OnInit {
       this.loadInitialData();
     }
     this.checkiOSInstallationButton();
+
+    // 서비스 워커가 업데이트를 감지했을 때 실행
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.versionUpdates.subscribe(evt => {
+        switch (evt.type) {
+          case 'VERSION_READY':
+            // 새 버전이 준비되면 사용자에게 묻거나 즉시 새로고침
+            if (confirm('새로운 업데이트가 있습니다. 적용하시겠습니까?')) {
+              window.location.reload();
+            }
+            break;
+        }
+      });
+    }
   }
 
   checkiOSInstallationButton() {
