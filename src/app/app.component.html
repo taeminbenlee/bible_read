@@ -153,7 +153,11 @@
           <div class="space-y-4">
             <label class="text-xs font-bold text-gray-400 block uppercase">통독 코스 선택</label>
             <div class="grid grid-cols-1 gap-3">
-              <div *ngFor="let course of courseList" (click)="selectedCourseId = course.id" [class.border-blue-600]="selectedCourseId === course.id" [class.bg-blue-50/50]="selectedCourseId === course.id" class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition flex justify-between items-start">
+              <div *ngFor="let course of courseList" (click)="selectedCourseId = course.id"
+                    [ngClass]="{
+                      'border-blue-600': selectedCourseId === course.id,
+                      'bg-blue-50/50': selectedCourseId === course.id
+                    }" class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition flex justify-between items-start">
                 <div class="space-y-1">
                   <span class="font-black text-gray-800 text-base block">{{ course.name }}</span>
                   <span class="text-xs text-gray-500 block leading-relaxed">{{ course.description }}</span>
@@ -172,7 +176,7 @@
 
           <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3">
             <label class="text-xs font-bold text-gray-400 block uppercase">통독 시작일 설정</label>
-            <input type="date" [(ngModel)]="courseStartDate" 
+            <input type="date" [(ngModel)]="courseStartDate"
                    class="w-full p-4 bg-gray-50 rounded-xl outline-none font-bold text-gray-700 border-none">
           </div>
 
@@ -184,7 +188,7 @@
 
         <!-- 2. 통독 코스 진행 중 상태 (대시보드 & 계획 일정) -->
         <div *ngIf="enrollment && enrollment.courseId" class="space-y-6">
-          
+
           <!-- 통독 대시보드 진행률 카드 -->
           <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-3xl shadow-lg text-white space-y-4">
             <div class="flex justify-between items-start">
@@ -207,7 +211,7 @@
                 </span>
               </div>
               <div class="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
-                <div class="bg-green-400 h-full transition-all duration-500" 
+                <div class="bg-green-400 h-full transition-all duration-500"
                      [style.width]="((enrollment.completedDates?.length || 0) / coursePlan.length * 100) + '%'"></div>
               </div>
             </div>
@@ -221,7 +225,7 @@
                 </span>
               </div>
               <div class="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
-                <div class="bg-blue-400 h-full transition-all duration-500" 
+                <div class="bg-blue-400 h-full transition-all duration-500"
                      [style.width]="(getCourseReadChaptersCount() / (bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.totalChapters || 1) * 100) + '%'"></div>
               </div>
             </div>
@@ -245,17 +249,17 @@
               </div>
 
               <div class="grid grid-cols-2 gap-3">
-                <button (click)="startReadingCourseRange(todayPlan)" 
+                <button (click)="startReadingCourseRange(todayPlan)"
                         class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 p-4 rounded-xl font-bold text-sm transition">
                   성경 본문 읽기
                 </button>
-                <button *ngIf="!isDayCompleted(todayPlan.dateStr)" 
-                        (click)="toggleDayComplete(todayPlan.dateStr, true)" 
+                <button *ngIf="!isDayCompleted(todayPlan.dateStr)"
+                        (click)="toggleDayComplete(todayPlan.dateStr, true)"
                         class="w-full bg-green-500 hover:bg-green-600 text-white p-4 rounded-xl font-bold text-sm shadow-md transition">
                   오늘 통독 완료
                 </button>
-                <button *ngIf="isDayCompleted(todayPlan.dateStr)" 
-                        (click)="toggleDayComplete(todayPlan.dateStr, false)" 
+                <button *ngIf="isDayCompleted(todayPlan.dateStr)"
+                        (click)="toggleDayComplete(todayPlan.dateStr, false)"
                         class="w-full bg-gray-100 text-gray-500 p-4 rounded-xl font-bold text-sm transition">
                   완료 취소
                 </button>
@@ -308,26 +312,30 @@
             </div>
 
             <div class="bg-white rounded-3xl border border-gray-100 shadow-sm divide-y">
-              <div *ngFor="let item of filteredPlan" [class.bg-blue-50/20]="item.dateStr === getTodayDateStr()" class="p-4 flex justify-between items-center transition">
+              <div *ngFor="let item of filteredPlan"
+                [ngClass]="{
+                  'bg-blue-50/20': item.dateStr === getTodayDateStr()
+                }"
+                class="p-4 flex justify-between items-center transition">
                 <div class="space-y-1">
                   <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-gray-400">{{ item.dateStr | date:'MM월 dd일' }}</span>
                     <span *ngIf="item.dateStr === getTodayDateStr()" class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded font-black uppercase">TODAY</span>
                   </div>
-                  <span class="font-bold text-gray-800 text-sm block cursor-pointer hover:text-blue-600" 
+                  <span class="font-bold text-gray-800 text-sm block cursor-pointer hover:text-blue-600"
                         (click)="startReadingCourseRange(item)">
                     {{ item.rangeText }}
                   </span>
                   <span class="text-[11px] text-gray-400 block">{{ item.totalChapters }}장 분량</span>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
-                  <button *ngIf="!isDayCompleted(item.dateStr)" 
+                  <button *ngIf="!isDayCompleted(item.dateStr)"
                           (click)="toggleDayComplete(item.dateStr, true)"
                           class="bg-gray-50 border hover:bg-green-50 text-gray-500 hover:text-green-700 px-3 py-1.5 rounded-xl text-xs font-bold transition">
                     완료하기
                   </button>
-                  <button *ngIf="isDayCompleted(item.dateStr)" 
+                  <button *ngIf="isDayCompleted(item.dateStr)"
                           (click)="toggleDayComplete(item.dateStr, false)"
                           class="bg-green-50 text-green-700 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">
                     <span>✓ 완료됨</span>
