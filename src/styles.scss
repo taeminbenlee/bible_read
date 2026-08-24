@@ -1,23 +1,4 @@
-@font-face {
-    font-family: 'Paperlogy';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-1@1.1/Paperlogy-4Regular.woff2') format('woff2');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Paperlogy';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-1@1.1/Paperlogy-7Bold.woff2') format('woff2');
-    font-weight: 700;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Paperlogy';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-1@1.1/Paperlogy-9Black.woff2') format('woff2');
-    font-weight: 900;
-    font-style: normal;
-}
+@import url('https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css');
 
 
 :root {
@@ -26,7 +7,7 @@
 }
 
 body {
-  font-family: 'Paperlogy', sans-serif !important;
+  font-family: 'Paperlogy', sans-serif;
   /* 모바일에서 글자 선택/복사를 막고 싶다면 추가 (성경 본문 제외 가능) */
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: contain; /* 당겨서 새로고침 방지 (필요시) */

@@ -1,15 +1,15 @@
 
 /* 전체 앱에 폰트 적용 */
 :root {
-    font-family: 'Paperlogy', sans-serif;
+  font-family: 'Paperlogy', sans-serif;
 }
 
 body {
-    font-family: 'Paperlogy', sans-serif !important;
+  font-family: 'Paperlogy', sans-serif;
     background-color: #f9fafb; /* gray-50 */
 }
 
 /* 입력창, 버튼, 선택창에도 폰트 강제 적용 */
 button, input, select, textarea {
-    font-family: 'Paperlogy', sans-serif !important;
+  font-family: 'Paperlogy', sans-serif;
 }
