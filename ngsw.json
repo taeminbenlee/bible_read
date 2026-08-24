@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1787549096098,
+  "timestamp": 1787549365459,
   "index": "/bible_read/index.html",
   "assetGroups": [
     {
@@ -52,7 +52,7 @@
     "/bible_read/assets/icons/web-app-manifest-192x192.png": "aff6f9dc8f2fb52f0a1db33ced9a9eeabbef4a66",
     "/bible_read/assets/icons/web-app-manifest-512x512.png": "1f873f67743cd8f132e26b537550c68064afadec",
     "/bible_read/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "/bible_read/index.html": "94e4f99949371164a86f7bb1bca21b21dc324c6a",
+    "/bible_read/index.html": "c316e3b132990b9453f8089c5bc0ed51d12dc3a1",
     "/bible_read/main.4f4fb885f49b571f.js": "c83baf7c2cde7f11081b6e01470588876abb348d",
     "/bible_read/manifest.webmanifest": "a3fd1ed84720ddadc2a74726ddc63120d660ae14",
     "/bible_read/polyfills.fefc2a8d4178c7b9.js": "3909b9414bc7bb12cb817b48c73796bbc13f316e",
