@@ -391,4 +391,12 @@ export class AppComponent implements OnInit {
       course => course.id === courseId
     )?.name ?? '';
   }
+
+  getCourseTotalChapters(courseId: string): number {
+    const course = this.bibleService.COURSE_LIST.find(
+      c => c.id === courseId
+    );
+
+    return course?.totalChapters ?? 0;
+  }
 }
