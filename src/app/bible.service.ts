@@ -51,7 +51,7 @@ export class BibleService {
   { name: '학개', abbr: '학', chapters: 2 },
   { name: '스가랴', abbr: '슥', chapters: 14 },
   { name: '말라기', abbr: '말', chapters: 4 },
-
+ 
   // 신약성경 (27권)
   { name: '마태복음', abbr: '마', chapters: 28 },
   { name: '마가복음', abbr: '막', chapters: 16 },
@@ -81,6 +81,19 @@ export class BibleService {
   { name: '유다서', abbr: '유', chapters: 1 },
   { name: '요한계시록', abbr: '계', chapters: 22 }
 ];
+
+  // 통독 코스 리스트
+  public COURSE_LIST = [
+    { id: 'all-1year', name: '성경 전체 1년 통독', description: '성경 전체를 1년 동안 완독하는 기본 코스입니다.', range: 'all', durationDays: 365, totalChapters: 1189 },
+    { id: 'all-6month', name: '성경 전체 6개월 통독', description: '성경 전체를 6개월 동안 빠르게 집중하여 통독합니다.', range: 'all', durationDays: 180, totalChapters: 1189 },
+    { id: 'all-3month', name: '성경 전체 3개월 통독', description: '하루에 많은 분량을 읽으며 3개월 만에 전체를 통독합니다.', range: 'all', durationDays: 90, totalChapters: 1189 },
+    { id: 'ot-1year', name: '구약 1년 통독', description: '구약 성경만을 1년 동안 깊이 있게 통독합니다.', range: 'ot', durationDays: 365, totalChapters: 929 },
+    { id: 'ot-6month', name: '구약 6개월 통독', description: '구약 성경을 6개월 동안 통독합니다.', range: 'ot', durationDays: 180, totalChapters: 929 },
+    { id: 'ot-3month', name: '구약 3개월 통독', description: '구약 성경을 3개월 동안 빠르게 통독합니다.', range: 'ot', durationDays: 90, totalChapters: 929 },
+    { id: 'nt-1year', name: '신약 1년 통독', description: '신약 성경만을 1년 동안 매일 조금씩 묵상하며 읽습니다.', range: 'nt', durationDays: 365, totalChapters: 260 },
+    { id: 'nt-6month', name: '신약 6개월 통독', description: '신약 성경을 6개월 동안 통독합니다.', range: 'nt', durationDays: 180, totalChapters: 260 },
+    { id: 'nt-3month', name: '신약 3개월 통독', description: '신약 성경을 3개월 동안 통독합니다.', range: 'nt', durationDays: 90, totalChapters: 260 }
+  ];
 
   constructor(private http: HttpClient, private firestore: Firestore) {}
 
@@ -128,5 +141,122 @@ export class BibleService {
       return snap.data()['reads'] || [];
     }
     return [];
+  }
+
+  // --- 통독 코스 관련 Firestore 연동 API ---
+
+  // 통독 코스 신청
+  async enrollInCourse(nickname: string, courseId: string, startDateStr: string) {
+    const enrollRef = doc(this.firestore, `user_course_enrollments/${nickname}`);
+    await setDoc(enrollRef, {
+      nickname,
+      courseId,
+      startDate: startDateStr,
+      completedDates: []
+    });
+  }
+
+  // 신청 현황 가져오기
+  async getEnrollment(nickname: string) {
+    const enrollRef = doc(this.firestore, `user_course_enrollments/${nickname}`);
+    const snap = await getDoc(enrollRef);
+    if (snap.exists()) {
+      return snap.data();
+    }
+    return null;
+  }
+
+  // 특정 날짜(포맷: YYYY-MM-DD) 완료 토글/추가
+  async saveCourseCompleteDate(nickname: string, dateStr: string, isComplete: boolean) {
+    const enrollRef = doc(this.firestore, `user_course_enrollments/${nickname}`);
+    const snap = await getDoc(enrollRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      let completedDates: string[] = data['completedDates'] || [];
+      if (isComplete) {
+        if (!completedDates.includes(dateStr)) {
+          completedDates.push(dateStr);
+        }
+      } else {
+        completedDates = completedDates.filter(d => d !== dateStr);
+      }
+      await updateDoc(enrollRef, { completedDates });
+    }
+  }
+
+  // 통독 코스 취소/삭제 (재설정용)
+  async deleteEnrollment(nickname: string) {
+    const enrollRef = doc(this.firestore, `user_course_enrollments/${nickname}`);
+    await setDoc(enrollRef, {});
+  }
+
+  // 통독 계획 일자별 데이터 계산기
+  generateCoursePlan(courseId: string, startDateStr: string): any[] {
+    const course = this.COURSE_LIST.find(c => c.id === courseId);
+    if (!course) return [];
+
+    // 1. 대상 성경 필터링
+    let filteredBooks: any[] = [];
+    if (course.range === 'all') {
+      filteredBooks = this.BIBLE_LIST;
+    } else if (course.range === 'ot') {
+      filteredBooks = this.BIBLE_LIST.slice(0, 39);
+    } else if (course.range === 'nt') {
+      filteredBooks = this.BIBLE_LIST.slice(39);
+    }
+
+    // 2. 전체 장(Chapter) 리스트 구성
+    const allChapters: { bookName: string, abbr: string, ch: number }[] = [];
+    filteredBooks.forEach(b => {
+      for (let i = 1; i <= b.chapters; i++) {
+        allChapters.push({ bookName: b.name, abbr: b.abbr, ch: i });
+      }
+    });
+
+    const totalChapters = allChapters.length;
+    const duration = course.durationDays;
+    const plan: any[] = [];
+    const startDate = new Date(startDateStr);
+
+    // 3. 각 날짜별 분배 알고리즘
+    for (let day = 1; day <= duration; day++) {
+      const startIdx = Math.floor(((day - 1) * totalChapters) / duration);
+      const endIdx = Math.floor((day * totalChapters) / duration);
+
+      const items = allChapters.slice(startIdx, endIdx);
+      
+      // 날짜 계산
+      const targetDate = new Date(startDate);
+      targetDate.setDate(startDate.getDate() + (day - 1));
+      const year = targetDate.getFullYear();
+      const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+      const dateVal = String(targetDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${dateVal}`;
+
+      let rangeText = '';
+      if (items.length > 0) {
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (first.bookName === last.bookName) {
+          if (first.ch === last.ch) {
+            rangeText = `${first.bookName} ${first.ch}장`;
+          } else {
+            rangeText = `${first.bookName} ${first.ch}장 ~ ${last.ch}장`;
+          }
+        } else {
+          rangeText = `${first.bookName} ${first.ch}장 ~ ${last.bookName} ${last.ch}장`;
+        }
+      }
+
+      plan.push({
+        day,
+        dateStr,
+        rangeText,
+        chapters: items,
+        totalChapters: items.length
+      });
+    }
+
+    return plan;
   }
 }

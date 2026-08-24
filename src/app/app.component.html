@@ -138,6 +138,210 @@
           </div>
         </div>
       </div>
+
+      <!-- [탭 3: 성경 통독] -->
+      <div *ngIf="activeTab === 'course'" class="space-y-6">
+        <!-- 1. 통독 코스 미등록 상태 (신청 화면) -->
+        <div *ngIf="!enrollment || !enrollment.courseId" class="space-y-6">
+          <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+            <h2 class="text-xl font-black text-blue-900 mb-2">성경 통독 코스 시작하기</h2>
+            <p class="text-sm text-blue-700 leading-relaxed">
+              나에게 맞는 통독 기간과 범위를 선택해 보세요. 시작일을 기준으로 매일 읽어야 할 성경 장 수가 자동으로 계산됩니다.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <label class="text-xs font-bold text-gray-400 block uppercase">통독 코스 선택</label>
+            <div class="grid grid-cols-1 gap-3">
+              <div *ngFor="let course of courseList" (click)="selectedCourseId = course.id" [class.border-blue-600]="selectedCourseId === course.id" [class.bg-blue-50/50]="selectedCourseId === course.id" class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition flex justify-between items-start">
+                <div class="space-y-1">
+                  <span class="font-black text-gray-800 text-base block">{{ course.name }}</span>
+                  <span class="text-xs text-gray-500 block leading-relaxed">{{ course.description }}</span>
+                  <div class="flex gap-2 mt-2">
+                    <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">기간: {{ course.durationDays }}일</span>
+                    <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-bold">분량: {{ course.totalChapters }}장</span>
+                    <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold">하루 평균: {{ (course.totalChapters / course.durationDays).toFixed(1) }}장</span>
+                  </div>
+                </div>
+                <div class="w-5 h-5 rounded-full border flex items-center justify-center" [class.bg-blue-600]="selectedCourseId === course.id" [class.border-blue-600]="selectedCourseId === course.id">
+                  <div *ngIf="selectedCourseId === course.id" class="w-2 h-2 rounded-full bg-white"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+            <label class="text-xs font-bold text-gray-400 block uppercase">통독 시작일 설정</label>
+            <input type="date" [(ngModel)]="courseStartDate" 
+                   class="w-full p-4 bg-gray-50 rounded-xl outline-none font-bold text-gray-700 border-none">
+          </div>
+
+          <button (click)="startCourse()"
+                  class="w-full bg-blue-700 text-white p-5 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition">
+            통독 시작하기
+          </button>
+        </div>
+
+        <!-- 2. 통독 코스 진행 중 상태 (대시보드 & 계획 일정) -->
+        <div *ngIf="enrollment && enrollment.courseId" class="space-y-6">
+          
+          <!-- 통독 대시보드 진행률 카드 -->
+          <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 rounded-3xl shadow-lg text-white space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">진행 중인 코스</span>
+                <h3 class="text-xl font-black mt-1">{{ bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.name }}</h3>
+                <p class="text-xs text-indigo-200 mt-1">시작일: {{ enrollment.startDate | date:'yyyy.MM.dd' }}</p>
+              </div>
+              <button (click)="cancelCourse()" class="text-xs bg-red-500/20 hover:bg-red-500/40 text-red-100 px-2.5 py-1 rounded-lg border border-red-500/30 transition">
+                코스 취소
+              </button>
+            </div>
+
+            <!-- 통독 진행률 프로그래스 바 (날짜 완료율 기준) -->
+            <div class="pt-2">
+              <div class="flex justify-between items-end mb-2 text-xs">
+                <span>통독 달성률</span>
+                <span class="font-bold">
+                  {{ enrollment.completedDates?.length || 0 }} / {{ coursePlan.length }}일 ({{ ((enrollment.completedDates?.length || 0) / coursePlan.length * 100).toFixed(1) }}%)
+                </span>
+              </div>
+              <div class="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-green-400 h-full transition-all duration-500" 
+                     [style.width]="((enrollment.completedDates?.length || 0) / coursePlan.length * 100) + '%'"></div>
+              </div>
+            </div>
+
+            <!-- 통독 진행률 프로그래스 바 (실제 성경 읽은 장 수 기준) -->
+            <div>
+              <div class="flex justify-between items-end mb-2 text-xs">
+                <span>해당 성경 범위 누적 장 수</span>
+                <span class="font-bold">
+                  {{ getCourseReadChaptersCount() }} / {{ bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.totalChapters }}장 ({{ (getCourseReadChaptersCount() / (bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.totalChapters || 1) * 100).toFixed(1) }}%)
+                </span>
+              </div>
+              <div class="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-blue-400 h-full transition-all duration-500" 
+                     [style.width]="(getCourseReadChaptersCount() / (bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.totalChapters || 1) * 100) + '%'"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 오늘의 통독 영역 -->
+          <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+              <h4 class="font-black text-gray-800 text-lg">오늘의 통독</h4>
+              <span class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">{{ getTodayDateStr() | date:'MM월 dd일' }}</span>
+            </div>
+
+            <div *ngIf="getTodayPlan() as todayPlan; else noTodayPlan" class="space-y-4">
+              <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl">
+                <div>
+                  <p class="font-black text-gray-800 text-base">{{ todayPlan.rangeText || '통독 계획이 없습니다' }}</p>
+                  <p class="text-xs text-gray-400 mt-1">총 {{ todayPlan.totalChapters }}장 분량</p>
+                </div>
+                <span *ngIf="isDayCompleted(todayPlan.dateStr)" class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">✓ 완료</span>
+                <span *ngIf="!isDayCompleted(todayPlan.dateStr)" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">진행 중</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <button (click)="startReadingCourseRange(todayPlan)" 
+                        class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 p-4 rounded-xl font-bold text-sm transition">
+                  성경 본문 읽기
+                </button>
+                <button *ngIf="!isDayCompleted(todayPlan.dateStr)" 
+                        (click)="toggleDayComplete(todayPlan.dateStr, true)" 
+                        class="w-full bg-green-500 hover:bg-green-600 text-white p-4 rounded-xl font-bold text-sm shadow-md transition">
+                  오늘 통독 완료
+                </button>
+                <button *ngIf="isDayCompleted(todayPlan.dateStr)" 
+                        (click)="toggleDayComplete(todayPlan.dateStr, false)" 
+                        class="w-full bg-gray-100 text-gray-500 p-4 rounded-xl font-bold text-sm transition">
+                  완료 취소
+                </button>
+              </div>
+            </div>
+            <ng-template #noTodayPlan>
+              <p class="text-sm text-gray-400 py-4 text-center">코스 계획 기간 밖이거나 계획 일정이 생성되지 않았습니다.</p>
+            </ng-template>
+          </div>
+
+          <!-- 밀린 통독 영역 (어제 미완료 시 노출) -->
+          <div *ngIf="getYesterdayPlan() as yesterdayPlan">
+            <div *ngIf="!isDayCompleted(yesterdayPlan.dateStr)" class="bg-red-50 p-5 rounded-3xl border border-red-100 space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-red-800 font-extrabold text-sm flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  밀린 통독이 있습니다
+                </span>
+                <span class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-bold">어제자 ({{ yesterdayPlan.dateStr | date:'MM.dd' }})</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="font-bold text-red-950">{{ yesterdayPlan.rangeText }} ({{ yesterdayPlan.totalChapters }}장)</span>
+                <div class="flex gap-2">
+                  <button (click)="startReadingCourseRange(yesterdayPlan)" class="bg-red-100 text-red-800 px-3 py-1.5 rounded-lg text-xs font-bold">성경 읽기</button>
+                  <button (click)="toggleDayComplete(yesterdayPlan.dateStr, true)" class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">완료</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 통독 일정 목록 -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="font-black text-gray-800 text-lg">통독 일정 목록</h4>
+              <div class="flex items-center gap-3">
+                <button (click)="prevMonth()" class="p-1 hover:bg-gray-100 rounded">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <span class="font-extrabold text-gray-700 text-sm">{{ currentYearMonth | date:'yyyy년 MM월' }}</span>
+                <button (click)="nextMonth()" class="p-1 hover:bg-gray-100 rounded">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-sm divide-y">
+              <div *ngFor="let item of filteredPlan" [class.bg-blue-50/20]="item.dateStr === getTodayDateStr()" class="p-4 flex justify-between items-center transition">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-gray-400">{{ item.dateStr | date:'MM월 dd일' }}</span>
+                    <span *ngIf="item.dateStr === getTodayDateStr()" class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded font-black uppercase">TODAY</span>
+                  </div>
+                  <span class="font-bold text-gray-800 text-sm block cursor-pointer hover:text-blue-600" 
+                        (click)="startReadingCourseRange(item)">
+                    {{ item.rangeText }}
+                  </span>
+                  <span class="text-[11px] text-gray-400 block">{{ item.totalChapters }}장 분량</span>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                  <button *ngIf="!isDayCompleted(item.dateStr)" 
+                          (click)="toggleDayComplete(item.dateStr, true)"
+                          class="bg-gray-50 border hover:bg-green-50 text-gray-500 hover:text-green-700 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                    완료하기
+                  </button>
+                  <button *ngIf="isDayCompleted(item.dateStr)" 
+                          (click)="toggleDayComplete(item.dateStr, false)"
+                          class="bg-green-50 text-green-700 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">
+                    <span>✓ 완료됨</span>
+                  </button>
+                </div>
+              </div>
+              <div *ngIf="filteredPlan.length === 0" class="p-8 text-center text-sm text-gray-400">
+                선택한 달에 해당하는 통독 계획 일정이 없습니다.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </main>
 
     <!-- 하단 네비게이션 바 (아이콘 추가 버전) -->
@@ -147,6 +351,12 @@
               [class.text-blue-600]="activeTab === 'read'"
               class="flex-1 flex flex-col items-center gap-1 transition-all active:scale-90">
         <span class="text-[10px] font-bold">성경읽기</span>
+      </button>
+
+      <button (click)="activeTab = 'course'; loadEnrollment()"
+              [class.text-blue-600]="activeTab === 'course'"
+              class="flex-1 flex flex-col items-center gap-1 transition-all active:scale-90">
+        <span class="text-[10px] font-bold">성경통독</span>
       </button>
 
       <button (click)="activeTab = 'rank'; loadRanking()"

@@ -31,9 +31,20 @@ export class AppComponent implements OnInit {
 
   readChapters: string[] = []; // 이미 읽은 장들의 ID (예: ['창1', '창2'])
 
+  // --- 통독 관련 변수 ---
+  courseList: any[] = [];
+  selectedCourseId = '';
+  courseStartDate = '';
+  enrollment: any = null;
+  coursePlan: any[] = [];
+
+  // 날짜별 통독 일정 목록 페이징 및 달 계산용
+  currentYearMonth = ''; // 'YYYY-MM'
+  filteredPlan: any[] = [];
 
   constructor(private firestore: Firestore, public bibleService: BibleService, private swUpdate: SwUpdate) {
     this.bibleList = this.bibleService.BIBLE_LIST;
+    this.courseList = this.bibleService.COURSE_LIST;
   }
 
    ngOnInit() {
@@ -69,14 +80,159 @@ export class AppComponent implements OnInit {
   }
 
   async loadInitialData() {
+    // 시작일 초기값 설정 (오늘 기준)
+    const today = new Date();
+    this.courseStartDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    this.currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
     await this.bibleService.getBibleData();
     await this.updateReadList();
     this.onBookChange();
     this.loadRanking();
+    await this.loadEnrollment();
   }
 
   async updateReadList() {
     this.readChapters = await this.bibleService.getUserReads(this.user.nickname);
+  }
+
+  // --- 통독 관련 메소드 ---
+  async loadEnrollment() {
+    if (!this.user) return;
+    this.enrollment = await this.bibleService.getEnrollment(this.user.nickname);
+    if (this.enrollment && this.enrollment.courseId) {
+      this.coursePlan = this.bibleService.generateCoursePlan(this.enrollment.courseId, this.enrollment.startDate);
+      
+      // 통독 계획 일정이 있다면 기본적으로 활성 달을 시작달로 맞춰줌
+      if (this.coursePlan.length > 0) {
+        const firstPlanMonth = this.coursePlan[0].dateStr.substring(0, 7);
+        // 오늘 날짜의 달이 계획 기간에 포함된다면 오늘 달로 맞추고 없으면 첫 달로
+        const todayStr = this.getTodayDateStr();
+        const todayMonth = todayStr.substring(0, 7);
+        const hasTodayMonth = this.coursePlan.some(p => p.dateStr.startsWith(todayMonth));
+        this.currentYearMonth = hasTodayMonth ? todayMonth : firstPlanMonth;
+      }
+      this.filterPlanByMonth();
+    } else {
+      this.coursePlan = [];
+      this.filteredPlan = [];
+    }
+  }
+
+  async startCourse() {
+    if (!this.selectedCourseId) return alert('통독 코스를 선택하세요.');
+    if (!this.courseStartDate) return alert('시작일을 입력하세요.');
+
+    if (confirm('선택하신 코스로 성경 통독을 시작하시겠습니까?')) {
+      await this.bibleService.enrollInCourse(this.user.nickname, this.selectedCourseId, this.courseStartDate);
+      alert('통독 코스가 성공적으로 등록되었습니다!');
+      await this.loadEnrollment();
+    }
+  }
+
+  async cancelCourse() {
+    if (confirm('정말로 현재 진행 중인 통독 코스를 중단하시겠습니까? 기존 통독 일정 완료 정보가 초기화됩니다. (성경 개별 읽기 기록은 유지됩니다)')) {
+      await this.bibleService.deleteEnrollment(this.user.nickname);
+      this.enrollment = null;
+      this.coursePlan = [];
+      this.filteredPlan = [];
+      alert('통독 코스가 중단되었습니다.');
+    }
+  }
+
+  // 오늘 날짜 문자열 획득 (KST 기준 YYYY-MM-DD)
+  getTodayDateStr(): string {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const dateVal = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${dateVal}`;
+  }
+
+  // 오늘 통독 일정 가져오기
+  getTodayPlan(): any {
+    const todayStr = this.getTodayDateStr();
+    return this.coursePlan.find(p => p.dateStr === todayStr);
+  }
+
+  // 어제 통독 일정 가져오기
+  getYesterdayPlan(): any {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    const yesterdayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    return this.coursePlan.find(p => p.dateStr === yesterdayStr);
+  }
+
+  // 특정 일자의 통독 완료 여부 검사
+  isDayCompleted(dateStr: string): boolean {
+    if (!this.enrollment || !this.enrollment.completedDates) return false;
+    return this.enrollment.completedDates.includes(dateStr);
+  }
+
+  // 특정 일자 통독 완료 처리
+  async toggleDayComplete(dateStr: string, isComplete: boolean) {
+    await this.bibleService.saveCourseCompleteDate(this.user.nickname, dateStr, isComplete);
+    await this.loadEnrollment();
+  }
+
+  // 특정 일자 읽기 범위 통독 시작 (읽기 본문 탭으로 자동 이동)
+  startReadingCourseRange(planItem: any) {
+    if (!planItem || planItem.chapters.length === 0) return;
+    const firstChapter = planItem.chapters[0];
+    
+    // BIBLE_LIST에서 abbr에 일치하는 index 조회
+    const bookIndex = this.bibleList.findIndex(b => b.abbr === firstChapter.abbr);
+    if (bookIndex !== -1) {
+      this.selectedBookIndex = bookIndex;
+      this.onBookChange();
+      this.selectChapter(firstChapter.ch);
+      this.activeTab = 'read';
+    }
+  }
+
+  // 특정 연월(YYYY-MM) 기준으로 필터링
+  filterPlanByMonth() {
+    this.filteredPlan = this.coursePlan.filter(p => p.dateStr.startsWith(this.currentYearMonth));
+  }
+
+  // 통독 달 이동 (이전/다음)
+  prevMonth() {
+    const [year, month] = this.currentYearMonth.split('-').map(Number);
+    const prevDate = new Date(year, month - 2, 1);
+    this.currentYearMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+    this.filterPlanByMonth();
+  }
+
+  nextMonth() {
+    const [year, month] = this.currentYearMonth.split('-').map(Number);
+    const nextDate = new Date(year, month, 1);
+    this.currentYearMonth = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`;
+    this.filterPlanByMonth();
+  }
+
+  // 코스 기준 읽은 장 수 계산 (사용자가 실제 읽은 성경 장 중 통독 대상 범위에 해당하는 장 수)
+  getCourseReadChaptersCount(): number {
+    if (!this.enrollment) return 0;
+    const course = this.courseList.find(c => c.id === this.enrollment.courseId);
+    if (!course) return 0;
+
+    let targetAbbrs: string[] = [];
+    if (course.range === 'all') {
+      targetAbbrs = this.bibleList.map(b => b.abbr);
+    } else if (course.range === 'ot') {
+      targetAbbrs = this.bibleList.slice(0, 39).map(b => b.abbr);
+    } else if (course.range === 'nt') {
+      targetAbbrs = this.bibleList.slice(39).map(b => b.abbr);
+    }
+
+    return this.readChapters.filter(key => {
+      // key는 '창1', '살후3' 등. 앞쪽 한글 약어를 파싱
+      const match = key.match(/^([^\d]+)/);
+      if (match) {
+        return targetAbbrs.includes(match[1]);
+      }
+      return false;
+    }).length;
   }
 
   // [로그인]
