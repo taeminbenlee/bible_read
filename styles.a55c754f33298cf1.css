@@ -1,0 +1,1 @@
+@import"https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css";@charset "UTF-8";:root{--safe-area-inset-bottom: env(safe-area-inset-bottom)}body{font-family:Paperlogy,sans-serif;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:contain}nav{padding-bottom:calc(.75rem + var(--safe-area-inset-bottom))!important}
