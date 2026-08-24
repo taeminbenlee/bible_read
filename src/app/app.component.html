@@ -194,7 +194,7 @@
             <div class="flex justify-between items-start">
               <div>
                 <span class="bg-white/20 text-white px-2 py-0.5 rounded-full text-[10px] font-bold">진행 중인 코스</span>
-                <h3 class="text-xl font-black mt-1">{{ bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.name }}</h3>
+                <h3 class="text-xl font-black mt-1">{{ getCourseName(enrollment.courseId) }}</h3>
                 <p class="text-xs text-indigo-200 mt-1">시작일: {{ enrollment.startDate | date:'yyyy.MM.dd' }}</p>
               </div>
               <button (click)="cancelCourse()" class="text-xs bg-red-500/20 hover:bg-red-500/40 text-red-100 px-2.5 py-1 rounded-lg border border-red-500/30 transition">
@@ -221,12 +221,12 @@
               <div class="flex justify-between items-end mb-2 text-xs">
                 <span>해당 성경 범위 누적 장 수</span>
                 <span class="font-bold">
-                  {{ getCourseReadChaptersCount() }} / {{ bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.totalChapters }}장 ({{ (getCourseReadChaptersCount() / (bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.totalChapters || 1) * 100).toFixed(1) }}%)
+                  {{ getCourseReadChaptersCount() }} / {{ getCourseTotalChapters(enrollment.courseId) }}장 ({{ (getCourseReadChaptersCount() / (getCourseTotalChapters(enrollment.courseId) || 1) * 100).toFixed(1) }}%)
                 </span>
               </div>
               <div class="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
                 <div class="bg-blue-400 h-full transition-all duration-500"
-                     [style.width]="(getCourseReadChaptersCount() / (bibleService.COURSE_LIST.find(c => c.id === enrollment.courseId)?.totalChapters || 1) * 100) + '%'"></div>
+                     [style.width]="(getCourseReadChaptersCount() / (getCourseTotalChapters(enrollment.courseId) || 1) * 100) + '%'"></div>
               </div>
             </div>
           </div>

@@ -102,7 +102,7 @@ export class AppComponent implements OnInit {
     this.enrollment = await this.bibleService.getEnrollment(this.user.nickname);
     if (this.enrollment && this.enrollment.courseId) {
       this.coursePlan = this.bibleService.generateCoursePlan(this.enrollment.courseId, this.enrollment.startDate);
-      
+
       // 통독 계획 일정이 있다면 기본적으로 활성 달을 시작달로 맞춰줌
       if (this.coursePlan.length > 0) {
         const firstPlanMonth = this.coursePlan[0].dateStr.substring(0, 7);
@@ -179,7 +179,7 @@ export class AppComponent implements OnInit {
   startReadingCourseRange(planItem: any) {
     if (!planItem || planItem.chapters.length === 0) return;
     const firstChapter = planItem.chapters[0];
-    
+
     // BIBLE_LIST에서 abbr에 일치하는 index 조회
     const bookIndex = this.bibleList.findIndex(b => b.abbr === firstChapter.abbr);
     if (bookIndex !== -1) {
@@ -380,5 +380,15 @@ export class AppComponent implements OnInit {
       // 아이폰이나 설치 팝업이 안 뜨는 경우 안내
       alert('아이폰(사파리): 하단 공유 버튼 클릭 후 [홈 화면에 추가]를 눌러주세요!\n안드로이드: 브라우저 설정 메뉴에서 [앱 설치]를 눌러주세요.');
     }
+  }
+
+  getCourseName(courseId: string): string {
+    if (!courseId) {
+      return '';
+    }
+
+    return this.bibleService.COURSE_LIST.find(
+      course => course.id === courseId
+    )?.name ?? '';
   }
 }
