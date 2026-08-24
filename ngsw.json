@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1787548463212,
+  "timestamp": 1787548764338,
   "index": "/bible_read/index.html",
   "assetGroups": [
     {
@@ -17,7 +17,7 @@
         "/bible_read/manifest.webmanifest",
         "/bible_read/polyfills.fefc2a8d4178c7b9.js",
         "/bible_read/runtime.10bcf8f29780a9f4.js",
-        "/bible_read/styles.4554cd956040c065.css"
+        "/bible_read/styles.4e2f8e3ed04532e3.css"
       ],
       "patterns": []
     },
@@ -52,12 +52,12 @@
     "/bible_read/assets/icons/web-app-manifest-192x192.png": "aff6f9dc8f2fb52f0a1db33ced9a9eeabbef4a66",
     "/bible_read/assets/icons/web-app-manifest-512x512.png": "1f873f67743cd8f132e26b537550c68064afadec",
     "/bible_read/favicon.ico": "22f6a4a3bcaafafb0254e0f2fa4ceb89e505e8b2",
-    "/bible_read/index.html": "c1e7709fb1e9d97e7a9cc16d300020a1f0004311",
+    "/bible_read/index.html": "1b44f4d04060990213d78eda8f5b2c69ea107f3a",
     "/bible_read/main.aaf95e634dcdb737.js": "a2e458b85e73cb5f8d39802d88222eed3e035fcd",
     "/bible_read/manifest.webmanifest": "a3fd1ed84720ddadc2a74726ddc63120d660ae14",
     "/bible_read/polyfills.fefc2a8d4178c7b9.js": "3909b9414bc7bb12cb817b48c73796bbc13f316e",
     "/bible_read/runtime.10bcf8f29780a9f4.js": "d60aa06ba084dfea190aa76a27b45008aa9005f3",
-    "/bible_read/styles.4554cd956040c065.css": "bac029ed0cf83b14b3382130f1a3727fd72462e7"
+    "/bible_read/styles.4e2f8e3ed04532e3.css": "fefb19c50700990f22660d21ad63d04f5601f27d"
   },
   "navigationUrls": [
     {
