@@ -42,7 +42,10 @@ export class AppComponent implements OnInit {
   currentYearMonth = ''; // 'YYYY-MM'
   filteredPlan: any[] = [];
 
-  constructor(private firestore: Firestore, public bibleService: BibleService, private swUpdate: SwUpdate) {
+  constructor(
+    private firestore: Firestore
+    , public bibleService: BibleService
+    , private swUpdate: SwUpdate) {
     this.bibleList = this.bibleService.BIBLE_LIST;
     this.courseList = this.bibleService.COURSE_LIST;
   }

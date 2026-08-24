@@ -1,6 +1,6 @@
 // src/environments/environment.ts
 export const environment = {
-  production: false,
+  production: true,
   firebase: {
     apiKey: "AIzaSyCp76n4jKbBCf51Z7RifCKbtvGNmHK1rNE",
     authDomain: "my-survival-c3eeb.firebaseapp.com",
